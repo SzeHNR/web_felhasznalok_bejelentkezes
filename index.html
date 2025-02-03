@@ -20,7 +20,7 @@
     </div>
 
     <script>
-        let users = []; // Global variable
+        let users = [];
 
         async function loadUsers() {
             try {
@@ -39,7 +39,7 @@
         }
 
         async function login() {
-            await loadUsers(); // Wait for the users to be loaded
+            await loadUsers(); 
 
             const username = document.getElementById("username").value;
             const pin = document.getElementById("pin").value;
