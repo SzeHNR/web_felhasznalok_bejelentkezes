@@ -1,88 +1,74 @@
 <!DOCTYPE html>
 <html lang="hu">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Belépés</title>
     <link rel="stylesheet" href="style.css">
 </head>
+
 <body>
 
-<div class="login-container">
-    <h2>Belépés</h2>
-    <label for="username">Felhasználónév:</label>
-    <input type="text" id="username" placeholder="Felhasználónév">
-    
-    <label for="pin">PIN kód:</label>
-    <input type="password" id="pin" placeholder="PIN kód">
-    
-    <button onclick="login()">Belépés</button>
-    
-    <p id="message" class="message"></p>
-    
-    <div id="user-info" class="user-info"></div>
-</div>
+    <div class="login-container">
+        <h2>Belépés</h2>
+        <input type="text" id="username" placeholder="Felhasználónév">
+        <input type="password" id="pin" placeholder="PIN kód">
+        <button onclick="login()">Belépés</button>
+        <p id="message" class="message"></p>
+        <div id="user-info" class="user-info"></div>
+    </div>
 
-<script>
-    // Felhasználói adatok tömbje (valós adatbázis helyett)
-    const users = [
-        {
-            vezeteknev: "Kovács",
-            keresztnev: "János",
-            lakóhely: "Budapest",
-            születés_dátuma: "1990-05-15",
-            születés_helye: "Debrecen",
-            felhasználónév: "janos.k",
-            pin_kód: "1234"
-        },
-        {
-            vezeteknev: "Nagy",
-            keresztnev: "Eszter",
-            lakóhely: "Pécs",
-            születés_dátuma: "1985-08-25",
-            születés_helye: "Szombathely",
-            felhasználónév: "eszter.n",
-            pin_kód: "5678"
-        }
-        // További felhasználók...
-    ];
+    <script>
+        let users = []; // Global variable
 
-    // Belépés funkció
-    function login() {
-        const username = document.getElementById("username").value;
-        const pin = document.getElementById("pin").value;
-        const messageElement = document.getElementById("message");
-        const userInfoElement = document.getElementById("user-info");
+        async function loadUsers() {
+            try {
+                const response = await fetch('forras.txt');
+                const textData = await response.text();
 
-        // Előző üzenet törlése
-        messageElement.textContent = '';
-        userInfoElement.innerHTML = '';
+                users = textData.trim().split(';').map(line => {
+                    const [vezeteknev, keresztnev, lakóhely, születés_dátuma, születés_helye, felhasználónév, pin_kód] = line.split(',');
+                    return { vezeteknev, keresztnev, lakóhely, születés_dátuma, születés_helye, felhasználónév, pin_kód };
+                });
 
-        // Felhasználó keresése
-        const user = users.find(u => u.felhasználónév === username);
-
-        if (!user) {
-            messageElement.textContent = "Nincs ilyen felhasználó.";
-            return;
+                console.log('Felhasználók betöltve:', users);
+            } catch (error) {
+                console.log('Hiba a fájl betöltésekor:', error);
+            }
         }
 
-        // PIN kód ellenőrzése
-        if (user.pin_kód !== pin) {
-            messageElement.textContent = "Hibás PIN kód.";
-            return;
+        async function login() {
+            await loadUsers(); // Wait for the users to be loaded
+
+            const username = document.getElementById("username").value;
+            const pin = document.getElementById("pin").value;
+
+            const user = users.find(u => u.felhasználónév === username);
+
+            if (!user) {
+                document.getElementById("message").textContent = "Nincs ilyen felhasználó.";
+                return;
+            }
+
+            if (user.pin_kód !== pin) {
+                document.getElementById("message").textContent = "Hibás PIN kód.";
+                return;
+            }
+
+            document.getElementById("user-info").innerHTML = `
+        <h3>Felhasználói adatok:</h3>
+        <p><strong>Vezetéknév:</strong> ${user.vezeteknev}</p>
+        <p><strong>Keresztnév:</strong> ${user.keresztnev}</p>
+        <p><strong>Lakóhely:</strong> ${user.lakóhely}</p>
+        <p><strong>Születési dátum:</strong> ${user.születés_dátuma}</p>
+        <p><strong>Születési hely:</strong> ${user.születés_helye}</p>
+    `;
         }
 
-        // Sikeres belépés, felhasználói adatok megjelenítése
-        userInfoElement.innerHTML = `
-            <h3>Felhasználói adatok:</h3>
-            <p><strong>Vezetéknév:</strong> ${user.vezeteknev}</p>
-            <p><strong>Keresztnév:</strong> ${user.keresztnev}</p>
-            <p><strong>Lakóhely:</strong> ${user.lakóhely}</p>
-            <p><strong>Születési dátum:</strong> ${user.születés_dátuma}</p>
-            <p><strong>Születési hely:</strong> ${user.születés_helye}</p>
-        `;
-    }
-</script>
+        loadUsers();
+    </script>
 
 </body>
+
 </html>
